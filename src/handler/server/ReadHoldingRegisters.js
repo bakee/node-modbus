@@ -7,12 +7,61 @@ module.exports = stampit()
     var init = function () {
       this.log.debug('initiating read holding registers request handler.')
 
-      if (!this.responseDelay) {
-        this.responseDelay = 0
+      if (Array.isArray(this.responseDelay)) {
+        this.responseDelay = this.responseDelay.concat([0, 0, 0, 0])
+        this.responseDelay.length = 4
+      } else if (!Number.isNaN(this.responseDelay)) {
+        this.responseDelay = [Number(this.responseDelay), 0, 0, 0]
+      } else {
+        this.responseDelay = [0, 0, 0, 0]
+      }
+
+      if (Number.isNaN(this.responseDelay[0])) {
+        this.normalDelay = 0
+      } else {
+        this.normalDelay = this.responseDelay[0]
+      }
+
+      if (Number.isNaN(this.responseDelay[1])) {
+        this.specialDelayAfter = 0
+      } else {
+        this.specialDelayAfter = this.responseDelay[1]
+      }
+
+      if (Number.isNaN(this.responseDelay[2])) {
+        this.specialDelay = 0
+      } else {
+        this.specialDelay = this.responseDelay[2]
+      }
+
+      if (Number.isNaN(this.responseDelay[3])) {
+        this.specialDelayRepeatInterval = 0
+      } else {
+        this.specialDelayRepeatInterval = this.responseDelay[3]
       }
 
       this.setRequestHandler(3, onRequest)
     }.bind(this)
+
+    this.currentResponseNo = 0
+
+    this.getDelayAmount = function (responseNumber) {
+      if (this.specialDelayAfter === 0 || responseNumber < this.specialDelayAfter) {
+        return this.normalDelay
+      }
+
+      if (responseNumber === this.specialDelayAfter) {
+        return this.specialDelay
+      }
+
+      if (this.specialDelayRepeatInterval > 0) {
+        if ((responseNumber - this.specialDelayAfter) % this.specialDelayRepeatInterval === 0) {
+          return this.specialDelay
+        }
+      }
+
+      return this.normalDelay
+    }
 
     var onRequest = function (pdu, cb) {
       setTimeout(function () {
@@ -58,7 +107,7 @@ module.exports = stampit()
         this.log.debug('finished read holding register request.')
 
         cb(response)
-      }.bind(this), this.responseDelay)
+      }.bind(this), (this.getDelayAmount(this.currentResponseNo++)))
     }.bind(this)
 
     init()
