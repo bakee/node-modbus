@@ -6,7 +6,7 @@ var modbus = require('../..')
 var serverPort = 5502
 
 /*
-responseDelay is the amount of delay in millisecond for each
+`responseDelay` is the amount of delay in millisecond for each
 response. For a consistenet delay one single numeric value
 can be used.
 
@@ -25,6 +25,11 @@ responseDelay[2] means the value of special delay.
 responseDelay[3] means the frequency of using special delay.
                  Default is 0 which means no repeat.
 
+
+`timeout` is the amount of millisecond within which if no 
+request/query is received from a client, server will close
+the connection. If `timeout` property is not defined or 
+it's value is set to `0` then, connection will not be closed. 
 */
 
 var server = stampit()
@@ -32,7 +37,8 @@ var server = stampit()
     'logEnabled': false,
     'logLevel': 'debug',
     'port': serverPort,
-    'responseDelay': [10, 20, 5000, 5],
+    'responseDelay': 10,
+    //'timeout': 1500,
     'coils': new Buffer(100000),
     'holding': new Buffer(100000),
     'whiteListIPs': [

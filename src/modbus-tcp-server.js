@@ -37,6 +37,10 @@ module.exports = stampit()
           return false
         }
 
+        if (!Number.isNaN(this.timeout) && this.timeout > 0) {
+          s.setTimeout(this.timeout)
+        }
+
         clients.push(s)
         initiateSocket(s)
       }.bind(this))
@@ -109,11 +113,17 @@ module.exports = stampit()
         this.log.debug('Client connection closed, remaining clients. ', socketList.length)
       }.bind(this)
 
+      var handleTimeout = function () {
+        this.log.debug('Client connection timedout, closing connection.')
+        socket.destroy()
+      }.bind(this)
+
       let clientSocket = ClientSocket({
         socket: socket,
         socketId: socketId,
         onRequest: requestHandler,
-        onEnd: removeHandler
+        onEnd: removeHandler,
+        onTimeout: handleTimeout
       })
 
       socketList.push(clientSocket)

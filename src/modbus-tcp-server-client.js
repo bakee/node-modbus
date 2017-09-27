@@ -15,6 +15,7 @@ module.exports = stampit()
       this.socket.on('end', this.onSocketEnd)
       this.socket.on('data', this.onSocketData)
       this.socket.on('error', this.onSocketError)
+      this.socket.on('timeout', this.onSocketTimeout)
     }.bind(this)
 
     this.onSocketEnd = function () {
@@ -64,6 +65,14 @@ module.exports = stampit()
 
     this.onSocketError = function (e) {
       this.logError('Socker error', e)
+    }.bind(this)
+
+    this.onSocketTimeout = function () {
+      if (this.onTimeout) {
+        this.onTimeout()
+      }
+
+      this.log.debug('connection timed out, socket', this.socketId)
     }.bind(this)
 
     init()
